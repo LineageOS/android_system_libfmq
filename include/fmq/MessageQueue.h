@@ -953,8 +953,16 @@ bool MessageQueue<T, flavor>::readBlocking(T* data, size_t count, int64_t timeOu
 }
 
 template <typename T, MQFlavor flavor>
-size_t MessageQueue<T, flavor>::availableToWriteBytes() const {
-    return mDesc->getSize() - availableToReadBytes();
+inline size_t MessageQueue<T, flavor>::availableToWriteBytes() const {
+    size_t queueSizeBytes = mDesc->getSize();
+    size_t availableBytes = availableToReadBytes();
+    if (queueSizeBytes < availableBytes) {
+        hardware::details::logError(
+                "The write or read pointer has become corrupted. Reading from the queue is no "
+                "longer possible.");
+        return 0;
+    }
+    return queueSizeBytes - availableBytes;
 }
 
 template <typename T, MQFlavor flavor>
@@ -1035,14 +1043,21 @@ bool MessageQueue<T, flavor>::commitWrite(size_t nMessages) {
 }
 
 template <typename T, MQFlavor flavor>
-size_t MessageQueue<T, flavor>::availableToReadBytes() const {
+inline size_t MessageQueue<T, flavor>::availableToReadBytes() const {
     /*
      * This method is invoked by implementations of both read() and write() and
      * hence requries a memory_order_acquired load for both mReadPtr and
      * mWritePtr.
      */
-    return mWritePtr->load(std::memory_order_acquire) -
-            mReadPtr->load(std::memory_order_acquire);
+    uint64_t writePtr = mWritePtr->load(std::memory_order_acquire);
+    uint64_t readPtr = mReadPtr->load(std::memory_order_acquire);
+    if (writePtr < readPtr) {
+        hardware::details::logError(
+                "The write or read pointer has become corrupted. Reading from the queue is no "
+                "longer possible.");
+        return 0;
+    }
+    return writePtr - readPtr;
 }
 
 template <typename T, MQFlavor flavor>
