@@ -16,6 +16,23 @@
       "message": "Note: Late add",
       "revId": "19c77ec23cfb09b28a0fe7d38b3677b94a555a35",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1d4cfff0_ca775680",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 26658
+      },
+      "writtenOn": "2024-08-16T19:27:53Z",
+      "side": 1,
+      "message": "This patch fails to apply when picking the topic because the project path can\u0027t be determined.\nDoes this need an change?",
+      "revId": "19c77ec23cfb09b28a0fe7d38b3677b94a555a35",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
