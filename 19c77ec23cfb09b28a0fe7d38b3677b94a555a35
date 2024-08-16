@@ -33,6 +33,24 @@
       "message": "This patch fails to apply when picking the topic because the project path can\u0027t be determined.\nDoes this need an change?",
       "revId": "19c77ec23cfb09b28a0fe7d38b3677b94a555a35",
       "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b9f76aa8_3bf172c8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 17656
+      },
+      "writtenOn": "2024-08-16T19:35:15Z",
+      "side": 1,
+      "message": "system/libfmq was needed to be forked from AOSP first, see the manifest change commit. I guess you would first need to change your manifest / local manifest and do a force-sync for this repo before picking the topic?",
+      "parentUuid": "1d4cfff0_ca775680",
+      "revId": "19c77ec23cfb09b28a0fe7d38b3677b94a555a35",
+      "serverId": "1ec6b3db-b2c1-4fa4-84a2-4c7efe89ba71"
     }
   ]
 }
