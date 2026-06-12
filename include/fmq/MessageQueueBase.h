@@ -1145,13 +1145,19 @@ size_t MessageQueueBase<MQDescriptorType, T, flavor>::availableToReadBytes() con
      */
     uint64_t writePtr = mWritePtr->load(std::memory_order_acquire);
     uint64_t readPtr = mReadPtr->load(std::memory_order_acquire);
-    if (writePtr < readPtr) {
-        hardware::details::logError(
+    size_t queueSizeBytes = mDesc->getSize();
+    size_t availableBytes = (writePtr >= readPtr) ? writePtr - readPtr : SIZE_MAX;
+    if (writePtr < readPtr ||
+        (flavor == kSynchronizedReadWrite && availableBytes > queueSizeBytes)) {
+        std::string errorMsg =
                 "The write or read pointer has become corrupted. Reading from the queue is no "
-                "longer possible.");
+                "longer possible. Write pointer: " +
+                std::to_string(writePtr) + ", read pointer: " + std::to_string(readPtr) +
+                ", queue size: " + std::to_string(queueSizeBytes);
+        hardware::details::logError(errorMsg);
         return 0;
     }
-    return writePtr - readPtr;
+    return availableBytes;
 }
 
 template <template <typename, MQFlavor> typename MQDescriptorType, typename T, MQFlavor flavor>
@@ -1169,6 +1175,13 @@ template <template <typename, MQFlavor> typename MQDescriptorType, typename T, M
 __attribute__((no_sanitize("integer"))) bool
 MessageQueueBase<MQDescriptorType, T, flavor>::beginRead(size_t nMessages,
                                                          MemTransaction* result) const {
+    if (flavor == kSynchronizedReadWrite && nMessages > getQuantumCount()) {
+        hardware::details::logError("Attempting to read " + std::to_string(nMessages) +
+                                    " from a queue that is only set up for " +
+                                    std::to_string(getQuantumCount()));
+        hardware::details::errorWriteLog(0x534e4554, "514861024");
+        return false;
+    }
     *result = MemTransaction();
     /*
      * If it is detected that the data in the queue was overwritten
